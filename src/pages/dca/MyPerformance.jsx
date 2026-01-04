@@ -12,6 +12,8 @@ const MyPerformance = () => {
                 label: 'My Recovery ($)',
                 data: [12000, 15000, 18000, 14000, 22000, 25000],
                 backgroundColor: '#4D148C',
+                hoverBackgroundColor: '#FF6600', // Secondary Orange on hover
+                borderRadius: 4,
             }
         ]
     };

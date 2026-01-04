@@ -58,6 +58,8 @@ const AppRoutes = () => {
                 <Route element={<MainLayout />}>
                     <Route path="/dca" element={<DCADashboard />} />
                     <Route path="/dca/cases" element={<MyCases />} />
+                    <Route path="/dca/cases/:caseId" element={<div className="p-6"><h1 className="text-2xl font-bold">Case Details Placeholder</h1><p>Static content for case details.</p></div>} />
+                    <Route path="/dca/update/:caseId" element={<div className="p-6"><h1 className="text-2xl font-bold">Update Case Placeholder</h1><p>Static content for updating case.</p></div>} />
                     <Route path="/dca/performance" element={<MyPerformance />} />
                 </Route>
             </Route>
