@@ -1,37 +1,68 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Card, { CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import { useParams, Link } from 'react-router-dom';
+import { MOCK_CASE_DETAILS_MAP } from '../../data/mockCaseDetails';
 
 const UpdateCase = () => {
     const { caseId } = useParams();
+    const [loading, setLoading] = useState(true);
+    const [caseData, setCaseData] = useState(null);
+    const [formData, setFormData] = useState({
+        actionType: 'Call Attempted',
+        actionDate: new Date().toISOString().split('T')[0],
+        outcome: 'Successful',
+        amountCollected: '',
+        notes: ''
+    });
 
-    // Static Dummy Data for Case Summary
-    const caseSummary = {
-        id: caseId || 'C-1035', // Fallback if no ID in URL for some reason, though likely will be
-        customerName: 'Safe Logistics Pvt Ltd',
-        amountDue: '$12,450.00',
-        priority: 'High', // Critical / High / Medium / Low
-        slaDeadline: 'Due Tomorrow',
-        status: 'Open'
+    useEffect(() => {
+        setLoading(true);
+        // Simulate API fetch
+        // fetch(`/api/cases/${caseId}`)
+
+        const timer = setTimeout(() => {
+            const data = MOCK_CASE_DETAILS_MAP[caseId];
+            setCaseData(data || null);
+            setLoading(false);
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [caseId]);
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
     };
 
-    // Helper for badge color based on priority (similar to Dashboard but static here or reused logic if I could import, but keeping simple/static)
-    const getPriorityColor = (p) => {
-        switch (p) {
-            case 'Critical': return 'destructive';
-            case 'High': return 'text-critical'; // Using text-critical as per Dashboard logic which seemed to use text classes for custom badges or specific map
-            // Dashboard used: return { text: 'Overdue', color: 'text-critical' }; 
-            // Wait, Dashboard uses `Badge variant={priority.color}`. 
-            // Let's use standard badge variants if possible: default, secondary, destructive, outline.
-            // Dashboard PRIORITY_CONFIG keys: CRITICAL, HIGH, MEDIUM, LOW.
-            // Let's map 'High' to 'destructive' or similar.
-            case 'Medium': return 'secondary';
-            case 'Low': return 'outline';
-            default: return 'destructive';
-        }
+    const handleSubmit = () => {
+        const payload = {
+            caseId: caseId || caseData?.id,
+            timestamp: new Date().toISOString(),
+            ...formData
+        };
+        console.log('Submitting Action Update:', payload);
+        alert('Action recorded! Check console for payload.');
     };
+
+    if (loading) {
+        return (
+            <div className="space-y-6 max-w-4xl mx-auto p-6 animate-pulse">
+                <div className="flex justify-between items-center">
+                    <div className="h-8 w-48 bg-gray-200 rounded"></div>
+                    <div className="h-8 w-24 bg-gray-200 rounded"></div>
+                </div>
+                <div className="h-40 bg-gray-200 rounded-lg"></div>
+                <div className="h-96 bg-gray-200 rounded-lg"></div>
+            </div>
+        );
+    }
+
+    if (!caseData) return <div className="p-6 text-center">Case not found</div>;
 
     return (
         <div className="space-y-6 max-w-4xl mx-auto p-6">
@@ -50,32 +81,32 @@ const UpdateCase = () => {
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div>
                         <p className="text-sm font-medium text-gray-500">Case ID</p>
-                        <p className="font-semibold text-gray-900">{caseSummary.id}</p>
+                        <p className="font-semibold text-gray-900">{caseData.id}</p>
                     </div>
                     <div>
                         <p className="text-sm font-medium text-gray-500">Customer Name</p>
-                        <p className="font-semibold text-gray-900">{caseSummary.customerName}</p>
+                        <p className="font-semibold text-gray-900">{caseData.customer.name}</p>
                     </div>
                     <div>
                         <p className="text-sm font-medium text-gray-500">Amount Due</p>
-                        <p className="font-semibold text-gray-900">{caseSummary.amountDue}</p>
+                        <p className="font-semibold text-gray-900">${caseData.financials.totalDue.toLocaleString()}</p>
                     </div>
                     <div>
                         <p className="text-sm font-medium text-gray-500">Priority</p>
-                        <Badge variant="destructive">{caseSummary.priority}</Badge>
+                        <Badge variant="destructive">{caseData.priority.label}</Badge>
                     </div>
                     <div>
                         <p className="text-sm font-medium text-gray-500">SLA Deadline</p>
-                        <span className="text-red-600 font-medium">{caseSummary.slaDeadline}</span>
+                        <span className="text-red-600 font-medium">{caseData.sla.status}</span>
                     </div>
                     <div>
                         <p className="text-sm font-medium text-gray-500">Current Status</p>
-                        <Badge variant="outline">{caseSummary.status}</Badge>
+                        <Badge variant="outline">{caseData.status}</Badge>
                     </div>
                 </CardContent>
             </Card>
 
-            {/* 2. Action Update Form (Static) */}
+            {/* 2. Action Update Form (Dynamic) */}
             <Card>
                 <CardHeader>
                     <CardTitle>Record Action</CardTitle>
@@ -84,7 +115,12 @@ const UpdateCase = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-gray-700">Action Type</label>
-                            <select className="w-full h-10 px-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white">
+                            <select
+                                name="actionType"
+                                value={formData.actionType}
+                                onChange={handleInputChange}
+                                className="w-full h-10 px-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                            >
                                 <option>Call Attempted</option>
                                 <option>Email Sent</option>
                                 <option>Partial Payment</option>
@@ -96,15 +132,21 @@ const UpdateCase = () => {
                             <label className="text-sm font-medium text-gray-700">Action Date</label>
                             <input
                                 type="date"
+                                name="actionDate"
                                 className="w-full h-10 px-3 rounded-md border border-gray-300 bg-gray-50 text-gray-500 cursor-not-allowed"
-                                value="2023-10-27" // Static date pre-filled
+                                value={formData.actionDate}
                                 readOnly
                             />
                         </div>
 
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-gray-700">Outcome</label>
-                            <select className="w-full h-10 px-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white">
+                            <select
+                                name="outcome"
+                                value={formData.outcome}
+                                onChange={handleInputChange}
+                                className="w-full h-10 px-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                            >
                                 <option>Successful</option>
                                 <option>No Response</option>
                                 <option>Follow-up Required</option>
@@ -116,7 +158,10 @@ const UpdateCase = () => {
                             <div className="relative">
                                 <span className="absolute left-3 top-2 text-gray-500">$</span>
                                 <input
-                                    type="text"
+                                    type="number"
+                                    name="amountCollected"
+                                    value={formData.amountCollected}
+                                    onChange={handleInputChange}
                                     placeholder="0.00"
                                     className="w-full h-10 pl-7 pr-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
@@ -127,6 +172,9 @@ const UpdateCase = () => {
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-gray-700">Notes / Remarks</label>
                         <textarea
+                            name="notes"
+                            value={formData.notes}
+                            onChange={handleInputChange}
                             className="w-full min-h-[100px] p-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             placeholder="Enter details about the interaction..."
                         ></textarea>
@@ -136,9 +184,11 @@ const UpdateCase = () => {
 
             {/* 3. Action Buttons */}
             <div className="flex items-center justify-end gap-3 pt-2">
-                <Button variant="ghost">Cancel</Button>
+                <Button variant="ghost" asChild>
+                    <Link to="/dca/cases">Cancel</Link>
+                </Button>
                 <Button variant="outline">Save Draft</Button>
-                <Button>Submit Update</Button>
+                <Button onClick={handleSubmit}>Submit Update</Button>
             </div>
         </div>
     );
