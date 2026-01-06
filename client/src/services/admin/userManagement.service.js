@@ -1,13 +1,12 @@
-import { userManagementMock } from '../../data/admin/userManagement.mock';
-
 export const fetchUsers = async () => {
-    // Simulate API call
-    // const response = await fetch('/api/admin/users');
-    // return response.json();
+    const response = await fetch('http://127.0.0.1:8000/api/admin/users');
 
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            resolve(userManagementMock);
-        }, 600);
-    });
+    if (!response.ok) {
+        throw new Error('Failed to fetch users');
+    }
+
+    const result = await response.json();
+
+    // API returns { success, count, data }
+    return result.data;
 };

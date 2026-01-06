@@ -2,10 +2,10 @@ import psycopg2
 
 DB_CONFIG = {
     "host": "localhost",
-    "port": 5432,
+    "port": 5433,
     "dbname": "fedex_dca",
     "user": "postgres",
-    "password": "Almighty#92"
+    "password": "1234"
 }
 
 def run_sql_file(filename):
