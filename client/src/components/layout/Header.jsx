@@ -28,7 +28,7 @@ const Header = () => {
                     variant="ghost"
                     size="sm"
                     onClick={() => {
-                        if (confirm('Are you sure you want to logout?')) logout();
+                        logout();
                     }}
                     className="text-gray-600 hover:text-critical"
                 >

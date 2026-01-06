@@ -22,9 +22,26 @@ const Sidebar = () => {
 
   const getLinks = (role) => {
     switch (role) {
+      //   case "admin":
+      //     return [
+      //       { name: "Dashboard", path: "/admin", icon: LayoutDashboard },
+      //       {
+      //         name: "DCA Performance",
+      //         path: "/admin/performance",
+      //         icon: BarChart3,
+      //       },
+      //       { name: "User Management", path: "/admin/users", icon: Users },
+      //       { name: "Reports", path: "/admin/reports", icon: FileText },
+      //       { name: "Audit Log", path: "/admin/audit", icon: ShieldCheck },
+      //     ];
       case "admin":
         return [
-          { name: "Dashboard", path: "/admin", icon: LayoutDashboard },
+          {
+            name: "Dashboard",
+            path: "/admin",
+            icon: LayoutDashboard,
+            exact: true,
+          },
           {
             name: "DCA Performance",
             path: "/admin/performance",
@@ -34,19 +51,45 @@ const Sidebar = () => {
           { name: "Reports", path: "/admin/reports", icon: FileText },
           { name: "Audit Log", path: "/admin/audit", icon: ShieldCheck },
         ];
+
+      //   case "ops_manager":
+      //     return [
+      //       { name: "Ops Dashboard", path: "/ops", icon: LayoutDashboard },
+      //       { name: "Assignments", path: "/ops/assignments", icon: UserCog },
+      //       { name: "Alerts", path: "/ops/alerts", icon: AlertTriangle },
+      //       { name: "SLA Workflow", path: "/ops/workflow", icon: History },
+      //     ];
       case "ops_manager":
         return [
-          { name: "Ops Dashboard", path: "/ops", icon: LayoutDashboard },
+          {
+            name: "Ops Dashboard",
+            path: "/ops",
+            icon: LayoutDashboard,
+            exact: true,
+          },
           { name: "Assignments", path: "/ops/assignments", icon: UserCog },
           { name: "Alerts", path: "/ops/alerts", icon: AlertTriangle },
           { name: "SLA Workflow", path: "/ops/workflow", icon: History },
         ];
+
+      //   case "dca_agent":
+      //     return [
+      //       { name: "My Dashboard", path: "/dca", icon: LayoutDashboard },
+      //       { name: "My Cases", path: "/dca/cases", icon: Briefcase },
+      //       { name: "My Performance", path: "/dca/performance", icon: BarChart3 },
+      //     ];
       case "dca_agent":
         return [
-          { name: "My Dashboard", path: "/dca", icon: LayoutDashboard },
+          {
+            name: "My Dashboard",
+            path: "/dca",
+            icon: LayoutDashboard,
+            exact: true,
+          },
           { name: "My Cases", path: "/dca/cases", icon: Briefcase },
           { name: "My Performance", path: "/dca/performance", icon: BarChart3 },
         ];
+
       default:
         return [];
     }
@@ -72,10 +115,23 @@ const Sidebar = () => {
         {links.map((link) => {
           const Icon = link.icon;
           return (
+            // <NavLink
+            //   key={link.path}
+            //   to={link.path}
+            //   end={link.path === `/${user.role}`}
+            //   className={({ isActive }) =>
+            //     clsx(
+            //       "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+            //       isActive
+            //         ? "bg-primary/10 text-primary"
+            //         : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+            //     )
+            //   }
+            // >
             <NavLink
               key={link.path}
               to={link.path}
-              end={link.path === `/${user.role}`}
+              end={link.exact === true}
               className={({ isActive }) =>
                 clsx(
                   "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
