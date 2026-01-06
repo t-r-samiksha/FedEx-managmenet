@@ -1,18 +1,42 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Card, { CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
-import { Bar, Line } from 'react-chartjs-2';
+import { Bar } from 'react-chartjs-2';
 import '../../utils/chartSetup';
 import { Trophy, Target, TrendingUp } from 'lucide-react';
+import { fetchMyPerformance } from '../../services/dca/myPerformance.service';
 
 const MyPerformance = () => {
-    const recoveryData = {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                const result = await fetchMyPerformance();
+                setData(result);
+            } catch (error) {
+                console.error("Failed to load performance data", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadData();
+    }, []);
+
+    if (loading) {
+        return <div className="p-6">Loading performance data...</div>;
+    }
+
+    if (!data) return <div className="p-6">Unable to load data.</div>;
+
+    const recoveryChartData = {
+        labels: data.recoveryTrend.labels,
         datasets: [
             {
                 label: 'My Recovery ($)',
-                data: [12000, 15000, 18000, 14000, 22000, 25000],
+                data: data.recoveryTrend.data,
                 backgroundColor: '#4D148C',
-                hoverBackgroundColor: '#FF6600', // Secondary Orange on hover
+                hoverBackgroundColor: '#FF6600',
                 borderRadius: 4,
             }
         ]
@@ -28,8 +52,8 @@ const MyPerformance = () => {
                         <div className="flex justify-between items-start">
                             <div>
                                 <p className="text-purple-200">Current Rank</p>
-                                <h3 className="text-4xl font-bold mt-1">Top 5%</h3>
-                                <p className="text-sm mt-2 flex items-center gap-1"><Trophy className="h-4 w-4" /> Gold Tier Agent</p>
+                                <h3 className="text-4xl font-bold mt-1">{data.rank.text}</h3>
+                                <p className="text-sm mt-2 flex items-center gap-1"><Trophy className="h-4 w-4" /> {data.rank.tier}</p>
                             </div>
                             <div className="h-12 w-12 bg-white/20 rounded-full flex items-center justify-center">
                                 <Trophy className="h-6 w-6 text-yellow-300" />
@@ -43,15 +67,15 @@ const MyPerformance = () => {
                         <div className="flex justify-between items-start">
                             <div>
                                 <p className="text-gray-500">Monthly Target</p>
-                                <h3 className="text-3xl font-bold text-gray-900 mt-1">$30k</h3>
-                                <p className="text-sm text-green-600 mt-2 font-medium">83% Achieved</p>
+                                <h3 className="text-3xl font-bold text-gray-900 mt-1">{data.target.amount}</h3>
+                                <p className="text-sm text-green-600 mt-2 font-medium">{data.target.achievedText}</p>
                             </div>
                             <div className="h-12 w-12 bg-green-50 rounded-full flex items-center justify-center">
                                 <Target className="h-6 w-6 text-green-600" />
                             </div>
                         </div>
                         <div className="mt-4 h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                            <div className="h-full bg-green-600 w-[83%]"></div>
+                            <div className="h-full bg-green-600" style={{ width: `${data.target.achievedPercentage}%` }}></div>
                         </div>
                     </CardContent>
                 </Card>
@@ -61,8 +85,8 @@ const MyPerformance = () => {
                         <div className="flex justify-between items-start">
                             <div>
                                 <p className="text-gray-500">Incentive Earned</p>
-                                <h3 className="text-3xl font-bold text-gray-900 mt-1">$1,250</h3>
-                                <p className="text-sm text-gray-500 mt-2">Paid on 30th Jun</p>
+                                <h3 className="text-3xl font-bold text-gray-900 mt-1">{data.incentive.amount}</h3>
+                                <p className="text-sm text-gray-500 mt-2">{data.incentive.payoutDate}</p>
                             </div>
                             <div className="h-12 w-12 bg-yellow-50 rounded-full flex items-center justify-center">
                                 <TrendingUp className="h-6 w-6 text-yellow-600" />
@@ -77,7 +101,7 @@ const MyPerformance = () => {
                 <CardContent>
                     <div className="h-[350px]">
                         <Bar
-                            data={recoveryData}
+                            data={recoveryChartData}
                             options={{
                                 maintainAspectRatio: false,
                                 scales: { y: { beginAtZero: true } }

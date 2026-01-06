@@ -1,24 +1,45 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Card, { CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
 import Badge from '../../components/ui/Badge';
-import { DCAS } from '../../data/mockData';
 import { Trophy, TrendingUp, Clock, AlertCircle } from 'lucide-react';
 import { Bar } from 'react-chartjs-2';
 import '../../utils/chartSetup';
+import { fetchDCAPerformance } from '../../services/admin/dcaPerformance.service';
 
 const DCAPerformance = () => {
+    const [dcas, setDcas] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                const data = await fetchDCAPerformance();
+                setDcas(data);
+            } catch (error) {
+                console.error("Failed to load DCA performance data", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadData();
+    }, []);
+
+    if (loading) {
+        return <div className="p-6">Loading performance data...</div>;
+    }
+
     const chartData = {
-        labels: DCAS.map(d => d.name),
+        labels: dcas.map(d => d.name),
         datasets: [
             {
                 label: 'Recovery Rate (%)',
-                data: DCAS.map(d => d.recoveryRate),
+                data: dcas.map(d => d.recoveryRate),
                 backgroundColor: '#4D148C',
             },
             {
                 label: 'Performance Score',
-                data: DCAS.map(d => d.performanceScore),
+                data: dcas.map(d => d.performanceScore),
                 backgroundColor: '#FF6600',
             }
         ]
@@ -64,7 +85,7 @@ const DCAPerformance = () => {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {[...DCAS].sort((a, b) => b.performanceScore - a.performanceScore).map((dca, index) => (
+                                {[...dcas].sort((a, b) => b.performanceScore - a.performanceScore).map((dca, index) => (
                                     <TableRow key={dca.id}>
                                         <TableCell>
                                             <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 font-bold text-gray-600">
@@ -88,7 +109,7 @@ const DCAPerformance = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {DCAS.map((dca) => (
+                {dcas.map((dca) => (
                     <Card key={dca.id} className="overflow-hidden">
                         <div className={`h-2 w-full ${dca.tier === 'Gold' ? 'bg-yellow-400' : dca.tier === 'Silver' ? 'bg-gray-400' : 'bg-orange-700'}`} />
                         <CardHeader className="pb-2">
@@ -105,11 +126,11 @@ const DCAPerformance = () => {
                                 </div>
                                 <div className="flex justify-between text-sm">
                                     <span className="text-gray-500 flex items-center gap-1"><Clock className="h-4 w-4" /> Avg Turnaround</span>
-                                    <span className="font-semibold text-gray-900">12 Days</span>
+                                    <span className="font-semibold text-gray-900">{dca.avgTurnaround}</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
                                     <span className="text-gray-500 flex items-center gap-1"><AlertCircle className="h-4 w-4" /> SLA Compliance</span>
-                                    <span className="font-semibold text-green-600">98%</span>
+                                    <span className="font-semibold text-green-600">{dca.slaCompliance}</span>
                                 </div>
                             </div>
                         </CardContent>
@@ -121,3 +142,4 @@ const DCAPerformance = () => {
 };
 
 export default DCAPerformance;
+

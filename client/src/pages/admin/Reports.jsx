@@ -1,11 +1,37 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Card, { CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Bar, Line, Doughnut } from 'react-chartjs-2';
 import '../../utils/chartSetup';
 import Button from '../../components/ui/Button';
 import { Download, Calendar } from 'lucide-react';
+import { fetchReportsData } from '../../services/admin/reports.service';
 
 const ReportsAnalytics = () => {
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                const result = await fetchReportsData();
+                setData(result);
+            } catch (error) {
+                console.error("Failed to load reports data", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadData();
+    }, []);
+
+    if (loading) {
+        return <div className="p-6">Loading reports...</div>;
+    }
+
+    if (!data) {
+        return <div className="p-6">Unable to load data.</div>;
+    }
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -27,10 +53,10 @@ const ReportsAnalytics = () => {
                         <div className="h-[300px]">
                             <Bar
                                 data={{
-                                    labels: ['North', 'South', 'East', 'West', 'Central'],
+                                    labels: data.recoveryByRegion.labels,
                                     datasets: [{
                                         label: 'Recovery %',
-                                        data: [75, 62, 80, 78, 65],
+                                        data: data.recoveryByRegion.data,
                                         backgroundColor: '#4D148C'
                                     }]
                                 }}
@@ -46,9 +72,9 @@ const ReportsAnalytics = () => {
                         <div className="h-[300px] flex justify-center">
                             <Doughnut
                                 data={{
-                                    labels: ['Paid', 'PTP', 'In Progress', 'New', 'Escalated'],
+                                    labels: data.caseStatusDistribution.labels,
                                     datasets: [{
-                                        data: [35, 20, 25, 15, 5],
+                                        data: data.caseStatusDistribution.data,
                                         backgroundColor: ['#16A34A', '#F59E0B', '#3B82F6', '#6B7280', '#DC2626']
                                     }]
                                 }}
@@ -64,10 +90,10 @@ const ReportsAnalytics = () => {
                         <div className="h-[300px]">
                             <Line
                                 data={{
-                                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'],
+                                    labels: data.collectionVolumeTrend.labels,
                                     datasets: [{
                                         label: 'Volume ($k)',
-                                        data: [150, 180, 160, 210, 240],
+                                        data: data.collectionVolumeTrend.data,
                                         borderColor: '#FF6600',
                                         backgroundColor: 'rgba(255, 102, 0, 0.1)',
                                         fill: true
@@ -84,3 +110,4 @@ const ReportsAnalytics = () => {
 };
 
 export default ReportsAnalytics;
+

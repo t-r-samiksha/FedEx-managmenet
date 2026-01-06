@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { api } from '../../services/api';
-import { PRIORITY_CONFIG } from '../../data/mockData';
+import { fetchOpsDashboardData } from '../../services/ops/dashboard.service';
 import Card, { CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import { Search, Filter, AlertCircle, Clock, CheckCircle2, TrendingUp } from 'lucide-react';
 import Input from '../../components/ui/Input';
+import { PRIORITY_CONFIG_MOCK } from '../../data/ops/dashboard.mock';
 
 const OpsDashboard = () => {
     const [cases, setCases] = useState([]);
@@ -16,18 +16,23 @@ const OpsDashboard = () => {
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
-            const data = await api.cases.getAll();
-            setCases(data);
-            setLoading(false);
+            try {
+                const data = await fetchOpsDashboardData();
+                setCases(data);
+            } catch (error) {
+                console.error("Failed to load dashboard data", error);
+            } finally {
+                setLoading(false);
+            }
         };
         fetchData();
     }, []);
 
     const getPriorityInfo = (score) => {
-        if (score >= PRIORITY_CONFIG.CRITICAL.min) return PRIORITY_CONFIG.CRITICAL;
-        if (score >= PRIORITY_CONFIG.HIGH.min) return PRIORITY_CONFIG.HIGH;
-        if (score >= PRIORITY_CONFIG.MEDIUM.min) return PRIORITY_CONFIG.MEDIUM;
-        return PRIORITY_CONFIG.LOW;
+        if (score >= PRIORITY_CONFIG_MOCK.CRITICAL.min) return PRIORITY_CONFIG_MOCK.CRITICAL;
+        if (score >= PRIORITY_CONFIG_MOCK.HIGH.min) return PRIORITY_CONFIG_MOCK.HIGH;
+        if (score >= PRIORITY_CONFIG_MOCK.MEDIUM.min) return PRIORITY_CONFIG_MOCK.MEDIUM;
+        return PRIORITY_CONFIG_MOCK.LOW;
     };
 
     const filteredCases = cases.filter(c =>
@@ -158,7 +163,7 @@ const OpsDashboard = () => {
                                         <TableRow key={caseItem.id}>
                                             <TableCell>
                                                 <div className="flex items-center gap-2">
-                                                    <div className={`h-3 w-3 rounded-full bg-${priority.color}`} />
+                                                    <div className={`h-3 w-3 rounded-full bg-${priority.color.replace('500', '500')}`} style={{ backgroundColor: priority.color.includes('red') ? '#ef4444' : priority.color.includes('orange') ? '#f97316' : priority.color.includes('yellow') ? '#eab308' : '#22c55e' }} />
                                                     <span className="font-semibold">{caseItem.priorityScore}</span>
                                                 </div>
                                             </TableCell>

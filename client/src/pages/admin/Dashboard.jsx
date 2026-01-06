@@ -1,16 +1,42 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Bar, Doughnut, Line } from 'react-chartjs-2';
 import '../../utils/chartSetup'; // Ensure charts are registered
 import Card, { CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { BadgeDollarSign, Users, TrendingUp, AlertTriangle } from 'lucide-react';
+import { fetchDashboardData } from '../../services/admin/dashboard.service';
 
 const AdminDashboard = () => {
-    // Mock Data for Charts
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                const result = await fetchDashboardData();
+                setData(result);
+            } catch (error) {
+                console.error("Failed to load dashboard data", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadData();
+    }, []);
+
+    if (loading) {
+        return <div className="p-6">Loading dashboard...</div>;
+    }
+
+    if (!data) {
+        return <div className="p-6">Unable to load data.</div>;
+    }
+
+    // Chart Data Preparation
     const overdueData = {
-        labels: ['0-30 Days', '31-60 Days', '61-90 Days', '90+ Days'],
+        labels: data.charts.overdueAging.labels,
         datasets: [
             {
-                data: [35, 25, 20, 20],
+                data: data.charts.overdueAging.data,
                 backgroundColor: ['#16A34A', '#F59E0B', '#F97316', '#DC2626'],
                 borderWidth: 0,
             },
@@ -18,11 +44,11 @@ const AdminDashboard = () => {
     };
 
     const recoveryData = {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        labels: data.charts.recoveryTrend.labels,
         datasets: [
             {
                 label: 'Recovery Rate (%)',
-                data: [65, 68, 72, 70, 75, 78],
+                data: data.charts.recoveryTrend.data,
                 borderColor: '#4D148C',
                 backgroundColor: 'rgba(77, 20, 140, 0.1)',
                 fill: true,
@@ -32,14 +58,24 @@ const AdminDashboard = () => {
     };
 
     const dcaPerformanceData = {
-        labels: ['Alpha Recovery', 'Beta Collections', 'Gamma Solutions', 'Delta Corp'],
+        labels: data.charts.dcaPerformance.labels,
         datasets: [
             {
                 label: 'Amount Recovered ($k)',
-                data: [450, 320, 280, 150],
+                data: data.charts.dcaPerformance.data,
                 backgroundColor: '#FF6600',
             },
         ],
+    };
+
+    const getStatIconAndColor = (type) => {
+        switch (type) {
+            case 'money': return { icon: BadgeDollarSign, color: 'text-primary' };
+            case 'users': return { icon: Users, color: 'text-blue-600' };
+            case 'percent': return { icon: TrendingUp, color: 'text-success' };
+            case 'alert': return { icon: AlertTriangle, color: 'text-critical' };
+            default: return { icon: Users, color: 'text-gray-600' };
+        }
     };
 
     return (
@@ -51,38 +87,20 @@ const AdminDashboard = () => {
 
             {/* Stats Row */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-                <StatsCard
-                    title="Total Overdue"
-                    value="$2.4M"
-                    trend="+12%"
-                    trendUp={true}
-                    icon={BadgeDollarSign}
-                    color="text-primary"
-                />
-                <StatsCard
-                    title="Active Cases"
-                    value="1,240"
-                    trend="-5%"
-                    trendUp={false}
-                    icon={Users}
-                    color="text-blue-600"
-                />
-                <StatsCard
-                    title="Avg Recovery Rate"
-                    value="78%"
-                    trend="+2.4%"
-                    trendUp={true}
-                    icon={TrendingUp}
-                    color="text-success"
-                />
-                <StatsCard
-                    title="SLA Breaches"
-                    value="12"
-                    trend="+2"
-                    trendUp={false}
-                    icon={AlertTriangle}
-                    color="text-critical"
-                />
+                {data.stats.map((stat, index) => {
+                    const { icon, color } = getStatIconAndColor(stat.type);
+                    return (
+                        <StatsCard
+                            key={index}
+                            title={stat.title}
+                            value={stat.value}
+                            trend={stat.trend}
+                            trendUp={stat.trendUp}
+                            icon={icon}
+                            color={color}
+                        />
+                    );
+                })}
             </div>
 
             {/* Main Charts Area */}
@@ -147,16 +165,16 @@ const AdminDashboard = () => {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            {[1, 2, 3].map((i) => (
-                                <div key={i} className="flex items-start gap-4 p-3 rounded-lg bg-red-50 border border-red-100">
+                            {data.alerts.map((alert) => (
+                                <div key={alert.id} className="flex items-start gap-4 p-3 rounded-lg bg-red-50 border border-red-100">
                                     <AlertTriangle className="h-5 w-5 text-critical shrink-0 mt-0.5" />
                                     <div>
-                                        <p className="text-sm font-semibold text-gray-900">SLA Breach Warning - Case #C-102{i}</p>
+                                        <p className="text-sm font-semibold text-gray-900">{alert.title}</p>
                                         <p className="text-xs text-gray-600 mt-1">
-                                            Case assigned to Beta Collections has exceeded the 48-hour initial contact window.
+                                            {alert.message}
                                         </p>
                                     </div>
-                                    <span className="text-xs text-gray-500 ml-auto whitespace-nowrap">2h ago</span>
+                                    <span className="text-xs text-gray-500 ml-auto whitespace-nowrap">{alert.time}</span>
                                 </div>
                             ))}
                         </div>
@@ -190,3 +208,4 @@ const StatsCard = ({ title, value, trend, trendUp, icon: Icon, color }) => (
 );
 
 export default AdminDashboard;
+

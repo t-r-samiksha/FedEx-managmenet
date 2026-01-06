@@ -5,6 +5,7 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { AlertCircle, Loader2 } from 'lucide-react';
+import { DEMO_CREDENTIALS } from '../data/auth.mock';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -42,15 +43,9 @@ const Login = () => {
     };
 
     const fillCredentials = (role) => {
-        if (role === 'admin') {
-            setEmail('admin@fedex.com');
-            setPassword('Admin@123');
-        } else if (role === 'ops') {
-            setEmail('ops@fedex.com');
-            setPassword('Ops@123');
-        } else if (role === 'dca') {
-            setEmail('dca@agency.com');
-            setPassword('Dca@123');
+        if (DEMO_CREDENTIALS[role]) {
+            setEmail(DEMO_CREDENTIALS[role].email);
+            setPassword(DEMO_CREDENTIALS[role].password);
         }
     };
 

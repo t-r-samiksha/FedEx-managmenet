@@ -3,7 +3,7 @@ import Card, { CardContent, CardHeader, CardTitle } from '../../components/ui/Ca
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import { useParams, Link } from 'react-router-dom';
-import { MOCK_CASE_DETAILS_MAP } from '../../data/mockCaseDetails';
+import { fetchCaseForUpdate, submitCaseUpdate } from '../../services/dca/updateCase.service';
 
 const UpdateCase = () => {
     const { caseId } = useParams();
@@ -18,17 +18,18 @@ const UpdateCase = () => {
     });
 
     useEffect(() => {
-        setLoading(true);
-        // Simulate API fetch
-        // fetch(`/api/cases/${caseId}`)
-
-        const timer = setTimeout(() => {
-            const data = MOCK_CASE_DETAILS_MAP[caseId];
-            setCaseData(data || null);
-            setLoading(false);
-        }, 500);
-
-        return () => clearTimeout(timer);
+        const loadData = async () => {
+            setLoading(true);
+            try {
+                const data = await fetchCaseForUpdate(caseId);
+                setCaseData(data);
+            } catch (error) {
+                console.error("Failed to load case for update", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadData();
     }, [caseId]);
 
     const handleInputChange = (e) => {
@@ -39,14 +40,19 @@ const UpdateCase = () => {
         }));
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         const payload = {
             caseId: caseId || caseData?.id,
             timestamp: new Date().toISOString(),
             ...formData
         };
-        console.log('Submitting Action Update:', payload);
-        alert('Action recorded! Check console for payload.');
+        try {
+            const result = await submitCaseUpdate(payload);
+            alert(result.message);
+        } catch (error) {
+            console.error("Failed to submit update", error);
+            alert("Failed to submit update.");
+        }
     };
 
     if (loading) {

@@ -1,37 +1,36 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Card, { CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
-import { MOCK_CASES, PRIORITY_CONFIG } from '../../data/mockData';
 import { Clock, Briefcase, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { format, differenceInDays, parseISO } from 'date-fns';
+import { fetchDCADashboardData } from '../../services/dca/dashboard.service';
 
 const DCADashboard = () => {
-    // Filter for 'my' cases (mock logic: assignedDcaId 'dca1')
-    const myCases = MOCK_CASES.filter(c => c.assignedDcaId === 'dca1').slice(0, 5);
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    // Helper to get priority config
-    const getPriority = (score) => {
-        if (score >= PRIORITY_CONFIG.CRITICAL.min) return PRIORITY_CONFIG.CRITICAL;
-        if (score >= PRIORITY_CONFIG.HIGH.min) return PRIORITY_CONFIG.HIGH;
-        if (score >= PRIORITY_CONFIG.MEDIUM.min) return PRIORITY_CONFIG.MEDIUM;
-        return PRIORITY_CONFIG.LOW;
-    };
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                const result = await fetchDCADashboardData();
+                setData(result);
+            } catch (error) {
+                console.error("Failed to load dashboard data", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadData();
+    }, []);
 
-    // Helper for SLA text
-    const getSLAText = (dateStr) => {
-        const days = differenceInDays(parseISO(dateStr), new Date());
-        if (days < 0) return { text: 'Overdue', color: 'text-critical' };
-        if (days === 0) return { text: 'Due Today', color: 'text-warning' };
-        return { text: `Due in ${days} days`, color: 'text-gray-500' };
-    };
+    if (loading) {
+        return <div className="p-6">Loading dashboard...</div>;
+    }
 
-    const stats = {
-        active: 12,
-        resolved: 45,
-        commission: '$3,400'
+    if (!data) {
+        return <div className="p-6">Unable to load data.</div>;
     }
 
     return (
@@ -43,7 +42,7 @@ const DCADashboard = () => {
                     <CardContent className="p-6 flex items-center justify-between">
                         <div>
                             <p className="text-sm font-medium text-gray-500">Active Cases</p>
-                            <h3 className="text-2xl font-bold text-gray-900">{stats.active}</h3>
+                            <h3 className="text-2xl font-bold text-gray-900">{data.stats.active}</h3>
                         </div>
                         <div className="p-3 bg-blue-50 text-blue-600 rounded-full"><Briefcase className="h-6 w-6" /></div>
                     </CardContent>
@@ -52,7 +51,7 @@ const DCADashboard = () => {
                     <CardContent className="p-6 flex items-center justify-between">
                         <div>
                             <p className="text-sm font-medium text-gray-500">Resolved Results</p>
-                            <h3 className="text-2xl font-bold text-gray-900">{stats.resolved}</h3>
+                            <h3 className="text-2xl font-bold text-gray-900">{data.stats.resolved}</h3>
                         </div>
                         <div className="p-3 bg-green-50 text-green-600 rounded-full"><CheckCircle2 className="h-6 w-6" /></div>
                     </CardContent>
@@ -61,7 +60,7 @@ const DCADashboard = () => {
                     <CardContent className="p-6 flex items-center justify-between">
                         <div>
                             <p className="text-sm font-medium text-gray-500">Pending Actions</p>
-                            <h3 className="text-2xl font-bold text-warning">4</h3>
+                            <h3 className="text-2xl font-bold text-warning">{data.stats.pendingActions}</h3>
                         </div>
                         <div className="p-3 bg-yellow-50 text-yellow-600 rounded-full"><Clock className="h-6 w-6" /></div>
                     </CardContent>
@@ -85,9 +84,7 @@ const DCADashboard = () => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {myCases.map((c) => {
-                                const priority = getPriority(c.priorityScore);
-                                const sla = getSLAText(c.deadline);
+                            {data.upcomingDeadlines.map((c) => {
                                 return (
                                     <TableRow key={c.id}>
                                         <TableCell className="font-medium">
@@ -97,9 +94,9 @@ const DCADashboard = () => {
                                         </TableCell>
                                         <TableCell>{c.customerName}</TableCell>
                                         <TableCell>
-                                            <Badge variant={priority.color}>{priority.label}</Badge>
+                                            <Badge variant={c.priorityColor}>{c.priorityLabel}</Badge>
                                         </TableCell>
-                                        <TableCell className={`${sla.color} font-medium`}>{sla.text}</TableCell>
+                                        <TableCell className={`${c.slaColor} font-medium`}>{c.slaText}</TableCell>
                                         <TableCell><Badge variant="outline">{c.status}</Badge></TableCell>
                                         <TableCell className="text-right">
                                             <Button size="sm" variant="outline" asChild>
@@ -118,3 +115,4 @@ const DCADashboard = () => {
 };
 
 export default DCADashboard;
+

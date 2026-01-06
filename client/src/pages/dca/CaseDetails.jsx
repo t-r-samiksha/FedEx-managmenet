@@ -4,7 +4,7 @@ import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import { useParams, Link } from 'react-router-dom';
 import { Phone, Mail, Building2, MapPin, Clock, AlertTriangle, CheckCircle2, User, Briefcase } from 'lucide-react';
-import { MOCK_CASE_DETAILS_MAP } from '../../data/mockCaseDetails';
+import { fetchCaseDetails } from '../../services/dca/caseDetails.service';
 
 const CaseDetails = () => {
     const { caseId } = useParams();
@@ -12,17 +12,18 @@ const CaseDetails = () => {
     const [caseData, setCaseData] = useState(null);
 
     useEffect(() => {
-        setLoading(true);
-        // Simulate API Call
-        // fetch(`/api/cases/${caseId}`)
-
-        const timer = setTimeout(() => {
-            const data = MOCK_CASE_DETAILS_MAP[caseId];
-            setCaseData(data || null);
-            setLoading(false);
-        }, 500);
-
-        return () => clearTimeout(timer);
+        const loadData = async () => {
+            setLoading(true);
+            try {
+                const data = await fetchCaseDetails(caseId);
+                setCaseData(data);
+            } catch (error) {
+                console.error("Failed to load case details", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadData();
     }, [caseId]);
 
     if (loading) {

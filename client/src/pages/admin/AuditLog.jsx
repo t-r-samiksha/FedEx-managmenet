@@ -1,10 +1,31 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Card, { CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
 import Badge from '../../components/ui/Badge';
-import { MOCK_LOGS } from '../../data/mockData';
+import { fetchAuditLogs } from '../../services/admin/auditLog.service';
 
 const AuditLog = () => {
+    const [logs, setLogs] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                const data = await fetchAuditLogs();
+                setLogs(data);
+            } catch (error) {
+                console.error("Failed to load audit logs", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadData();
+    }, []);
+
+    if (loading) {
+        return <div className="p-6">Loading audit logs...</div>;
+    }
+
     return (
         <div className="space-y-6">
             <h1 className="text-2xl font-bold text-gray-900">System Audit Log</h1>
@@ -22,7 +43,7 @@ const AuditLog = () => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {MOCK_LOGS.map((log) => (
+                            {logs.map((log) => (
                                 <TableRow key={log.id}>
                                     <TableCell className="text-gray-500 text-sm">
                                         {new Date(log.timestamp).toLocaleString()}
@@ -30,7 +51,7 @@ const AuditLog = () => {
                                     <TableCell className="font-medium">{log.user}</TableCell>
                                     <TableCell><Badge variant="outline">{log.role}</Badge></TableCell>
                                     <TableCell>{log.action}</TableCell>
-                                    <TableCell className="text-gray-500 text-sm">IP: 192.168.1.1</TableCell>
+                                    <TableCell className="text-gray-500 text-sm">{log.details}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
@@ -42,3 +63,4 @@ const AuditLog = () => {
 };
 
 export default AuditLog;
+

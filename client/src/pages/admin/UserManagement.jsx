@@ -1,12 +1,42 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Card, { CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
-import { MOCK_USERS } from '../../context/AuthContext';
 import { Plus, MoreHorizontal } from 'lucide-react';
+import { fetchUsers } from '../../services/admin/userManagement.service';
 
 const UserManagement = () => {
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                const data = await fetchUsers();
+                setUsers(data);
+            } catch (error) {
+                console.error("Failed to load users", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadData();
+    }, []);
+
+    if (loading) {
+        return <div className="p-6">Loading users...</div>;
+    }
+
+    const getStatusVariant = (status) => {
+        switch (status) {
+            case 'Active': return 'success';
+            case 'Offline': return 'secondary';
+            case 'Inactive': return 'default';
+            default: return 'outline';
+        }
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -30,7 +60,7 @@ const UserManagement = () => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {MOCK_USERS.map((user) => (
+                            {users.map((user) => (
                                 <TableRow key={user.id}>
                                     <TableCell>
                                         <div className="flex items-center gap-3">
@@ -47,9 +77,9 @@ const UserManagement = () => {
                                         </Badge>
                                     </TableCell>
                                     <TableCell>
-                                        <Badge variant="success">Active</Badge>
+                                        <Badge variant={getStatusVariant(user.status)}>{user.status}</Badge>
                                     </TableCell>
-                                    <TableCell className="text-gray-500">2 mins ago</TableCell>
+                                    <TableCell className="text-gray-500">{user.lastActive}</TableCell>
                                     <TableCell className="text-right">
                                         <Button variant="ghost" size="icon">
                                             <MoreHorizontal className="h-4 w-4" />
@@ -66,3 +96,4 @@ const UserManagement = () => {
 };
 
 export default UserManagement;
+

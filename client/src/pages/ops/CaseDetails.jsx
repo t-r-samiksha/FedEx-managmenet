@@ -6,10 +6,39 @@ import Button from '../../components/ui/Button';
 import { MOCK_CASES } from '../../data/mockData';
 import { ArrowLeft, Clock, DollarSign, BrainCircuit, History } from 'lucide-react';
 
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import Card, { CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
+import Badge from '../../components/ui/Badge';
+import Button from '../../components/ui/Button';
+import { ArrowLeft, Clock, DollarSign, BrainCircuit, History } from 'lucide-react';
+import { fetchCaseDetails } from '../../services/ops/caseDetails.service';
+
 const CaseDetails = () => {
-    // Mocking ID since we don't have real routing params connected to data yet in this view
-    // In a real app we'd use useParams() and fetch
-    const caseData = MOCK_CASES[0];
+    // In a real app we'd use useParams()
+    const { caseId } = useParams();
+    const [caseData, setCaseData] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                // Pass "C-1001" as default if caseId is undefined for demo purposes
+                // based on original logic which used MOCK_CASES[0]
+                const idToFetch = caseId || "C-1001";
+                const data = await fetchCaseDetails(idToFetch);
+                setCaseData(data);
+            } catch (error) {
+                console.error("Failed to load case details", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadData();
+    }, [caseId]);
+
+    if (loading) return <div className="p-6">Loading case details...</div>;
+    if (!caseData) return <div className="p-6">Case not found.</div>;
 
     return (
         <div className="space-y-6">
@@ -88,26 +117,19 @@ const CaseDetails = () => {
                         <CardHeader><CardTitle>Case History</CardTitle></CardHeader>
                         <CardContent>
                             <div className="space-y-4">
-                                <div className="flex gap-4">
-                                    <div className="flex flex-col items-center">
-                                        <div className="h-2 w-2 rounded-full bg-gray-300"></div>
-                                        <div className="h-full w-0.5 bg-gray-200 my-1"></div>
+                                {caseData.history.map((item, index) => (
+                                    <div key={index} className="flex gap-4">
+                                        <div className="flex flex-col items-center">
+                                            <div className={`h-2 w-2 rounded-full ${index === 0 ? 'bg-gray-300' : 'bg-primary'}`}></div>
+                                            {index < caseData.history.length - 1 && <div className="h-full w-0.5 bg-gray-200 my-1"></div>}
+                                        </div>
+                                        <div className={index < caseData.history.length - 1 ? 'pb-4' : ''}>
+                                            <p className="text-sm font-semibold text-gray-900">{item.action}</p>
+                                            <p className="text-xs text-gray-500">{item.date}</p>
+                                            <p className="text-sm text-gray-600 mt-1">{item.description}</p>
+                                        </div>
                                     </div>
-                                    <div className="pb-4">
-                                        <p className="text-sm font-semibold text-gray-900">Email Sent</p>
-                                        <p className="text-xs text-gray-500">Today, 10:00 AM</p>
-                                        <p className="text-sm text-gray-600 mt-1">Automated payment reminder sent to customer.</p>
-                                    </div>
-                                </div>
-                                <div className="flex gap-4">
-                                    <div className="flex flex-col items-center">
-                                        <div className="h-2 w-2 rounded-full bg-primary"></div>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-semibold text-gray-900">Case Created</p>
-                                        <p className="text-xs text-gray-500">Yesterday, 2:30 PM</p>
-                                    </div>
-                                </div>
+                                ))}
                             </div>
                         </CardContent>
                     </Card>
@@ -129,7 +151,7 @@ const CaseDetails = () => {
                         <CardContent>
                             <div className="flex items-center gap-2 text-warning mb-2">
                                 <Clock className="h-5 w-5" />
-                                <span className="font-bold text-lg">23h 45m</span>
+                                <span className="font-bold text-lg">{caseData.sla.remaining}</span>
                             </div>
                             <p className="text-xs text-gray-500">Remaining before Stage 1 Escalation</p>
                         </CardContent>
