@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash TEXT NOT NULL,
     name TEXT NOT NULL,
     role TEXT CHECK (role IN ('admin','ops_manager','dca_agent','viewer')) NOT NULL,
+    organization TEXT NULL,  
     avatar_url TEXT,
     status TEXT DEFAULT 'active',
     created_at TIMESTAMP DEFAULT now(),

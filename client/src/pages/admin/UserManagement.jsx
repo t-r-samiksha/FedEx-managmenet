@@ -54,8 +54,9 @@ const UserManagement = () => {
                             <TableRow>
                                 <TableHead>User</TableHead>
                                 <TableHead>Role</TableHead>
+                                <TableHead>Organization</TableHead>
                                 <TableHead>Status</TableHead>
-                                <TableHead>Last Active</TableHead>
+                                {/* <TableHead>Last Active</TableHead> */}
                                 <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -76,10 +77,11 @@ const UserManagement = () => {
                                             {user.role.replace('_', ' ')}
                                         </Badge>
                                     </TableCell>
+                                    <TableCell className="text-gray-500">{user.organization}</TableCell>
                                     <TableCell>
                                         <Badge variant={getStatusVariant(user.status)}>{user.status}</Badge>
                                     </TableCell>
-                                    <TableCell className="text-gray-500">{user.lastActive}</TableCell>
+                                    {/* <TableCell className="text-gray-500">{user.lastActive}</TableCell> */}
                                     <TableCell className="text-right">
                                         <Button variant="ghost" size="icon">
                                             <MoreHorizontal className="h-4 w-4" />

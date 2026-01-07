@@ -29,12 +29,16 @@ try:
     }
 
     cur.execute("""
-        INSERT INTO users (id,email,password_hash,name,role)
+        INSERT INTO users (id, email, password_hash, name, role, organization)
         VALUES
-        (%s,'admin@fedex.com','HASHED','Admin User','admin'),
-        (%s,'ops@fedex.com','HASHED','Operations Manager','ops_manager'),
-        (%s,'agent@agency.com','HASHED','DCA Agent','dca_agent')
-    """, (users["admin"], users["ops"], users["agent"]))
+        (%s, 'admin@fedex.com', 'HASHED', 'Admin User', 'admin', 'FedEx'),
+        (%s, 'ops@fedex.com', 'HASHED', 'Operations Manager', 'ops_manager', 'FedEx'),
+        (%s, 'agent@agency.com', 'HASHED', 'DCA Agent', 'dca_agent', 'Alpha Recovery')
+    """, (
+        users["admin"],
+        users["ops"],
+        users["agent"]
+    ))
 
     # =========================
     # DCAS

@@ -39,7 +39,7 @@ const AuditLog = () => {
                                 <TableHead>User</TableHead>
                                 <TableHead>Role</TableHead>
                                 <TableHead>Action</TableHead>
-                                <TableHead>Details</TableHead>
+                                {/* <TableHead>Details</TableHead> */}
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -51,7 +51,7 @@ const AuditLog = () => {
                                     <TableCell className="font-medium">{log.user}</TableCell>
                                     <TableCell><Badge variant="outline">{log.role}</Badge></TableCell>
                                     <TableCell>{log.action}</TableCell>
-                                    <TableCell className="text-gray-500 text-sm">{log.details}</TableCell>
+                                    {/* <TableCell className="text-gray-500 text-sm">{log.details}</TableCell> */}
                                 </TableRow>
                             ))}
                         </TableBody>
