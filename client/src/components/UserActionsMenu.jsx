@@ -11,6 +11,15 @@ const UserActionsMenu = ({ onAction, user }) => {
 
     const toggleMenu = (e) => {
         e.stopPropagation();
+        if (!isOpen) {
+            const rect = e.currentTarget.getBoundingClientRect();
+            // Dropdown is w-48 (12rem = 192px)
+            const dropdownWidth = 192;
+            setMenuPosition({
+                top: rect.bottom + 8,
+                left: rect.right - dropdownWidth,
+            });
+        }
         setIsOpen(!isOpen);
     };
 
