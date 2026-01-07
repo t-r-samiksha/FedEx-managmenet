@@ -36,8 +36,12 @@ const UserManagement = () => {
     }, []);
 
     const handleAction = (actionType, user) => {
-        setSelectedUser(user);
-        setActiveAction(actionType);
+        if (actionType === 'activate') {
+            handleActivateUser(user.id);
+        } else {
+            setSelectedUser(user);
+            setActiveAction(actionType);
+        }
     };
 
     const closeAction = () => {
@@ -56,6 +60,12 @@ const UserManagement = () => {
         console.log("Deactivating user:", userId);
         // Optimistic UI update
         setUsers(users.map(u => u.id === userId ? { ...u, status: 'Inactive' } : u));
+    };
+
+    const handleActivateUser = (userId) => {
+        console.log("Activating user:", userId);
+        // Optimistic UI update
+        setUsers(users.map(u => u.id === userId ? { ...u, status: 'Active' } : u));
     };
 
     if (loading) {
