@@ -3,12 +3,23 @@ import Card, { CardContent, CardHeader, CardTitle } from '../../components/ui/Ca
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
-import { Plus, MoreHorizontal } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { fetchUsers } from '../../services/admin/userManagement.service';
+
+// New Components
+import UserActionsMenu from '../../components/UserActionsMenu';
+import UserDetailsModal from '../../components/UserDetailsModal';
+import EditUserModal from '../../components/EditUserModal';
+import DeactivateUserDialog from '../../components/DeactivateUserDialog';
+import UserActivityModal from '../../components/UserActivityModal';
 
 const UserManagement = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // Actions State
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [activeAction, setActiveAction] = useState(null);
 
     useEffect(() => {
         const loadData = async () => {
@@ -23,6 +34,29 @@ const UserManagement = () => {
         };
         loadData();
     }, []);
+
+    const handleAction = (actionType, user) => {
+        setSelectedUser(user);
+        setActiveAction(actionType);
+    };
+
+    const closeAction = () => {
+        setSelectedUser(null);
+        setActiveAction(null);
+    };
+
+    // Stub handlers for future API integration
+    const handleSaveUser = (updatedUser) => {
+        console.log("Saving user:", updatedUser);
+        // Optimistic UI update
+        setUsers(users.map(u => u.id === updatedUser.id ? updatedUser : u));
+    };
+
+    const handleDeactivateUser = (userId) => {
+        console.log("Deactivating user:", userId);
+        // Optimistic UI update
+        setUsers(users.map(u => u.id === userId ? { ...u, status: 'Inactive' } : u));
+    };
 
     if (loading) {
         return <div className="p-6">Loading users...</div>;
@@ -83,9 +117,7 @@ const UserManagement = () => {
                                     </TableCell>
                                     {/* <TableCell className="text-gray-500">{user.lastActive}</TableCell> */}
                                     <TableCell className="text-right">
-                                        <Button variant="ghost" size="icon">
-                                            <MoreHorizontal className="h-4 w-4" />
-                                        </Button>
+                                        <UserActionsMenu user={user} onAction={handleAction} />
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -93,6 +125,33 @@ const UserManagement = () => {
                     </Table>
                 </CardContent>
             </Card>
+
+            {/* Modals */}
+            <UserDetailsModal
+                user={selectedUser}
+                isOpen={activeAction === 'view'}
+                onClose={closeAction}
+            />
+
+            <EditUserModal
+                user={selectedUser}
+                isOpen={activeAction === 'edit'}
+                onClose={closeAction}
+                onSave={handleSaveUser}
+            />
+
+            <DeactivateUserDialog
+                user={selectedUser}
+                isOpen={activeAction === 'deactivate'}
+                onClose={closeAction}
+                onConfirm={handleDeactivateUser}
+            />
+
+            <UserActivityModal
+                userId={selectedUser?.id}
+                isOpen={activeAction === 'activity'}
+                onClose={closeAction}
+            />
         </div>
     );
 };
