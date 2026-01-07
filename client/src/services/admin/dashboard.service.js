@@ -1,13 +1,9 @@
-import { dashboardMock } from '../../data/admin/dashboard.mock';
-
 export const fetchDashboardData = async () => {
-    // Simulate API call
-    // const response = await fetch('/api/admin/dashboard');
-    // return response.json();
+    const response = await fetch('http://127.0.0.1:8000/admin/dashboard');
 
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            resolve(dashboardMock);
-        }, 700);
-    });
+    if (!response.ok) {
+        throw new Error('Failed to fetch dashboard data');
+    }
+
+    return response.json();
 };
