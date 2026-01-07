@@ -63,7 +63,8 @@
 from fastapi import APIRouter
 from urllib.parse import quote_plus
 
-from db.connection import get_db_connection
+from db import get_db_connection
+
 
 router = APIRouter()
 
