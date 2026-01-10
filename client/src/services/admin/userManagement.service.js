@@ -1,5 +1,5 @@
 export const fetchUsers = async () => {
-    const response = await fetch('http://127.0.0.1:8000/api/admin/users');
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/users`);
 
     if (!response.ok) {
         throw new Error('Failed to fetch users');

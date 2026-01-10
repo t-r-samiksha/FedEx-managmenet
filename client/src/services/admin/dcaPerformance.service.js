@@ -13,7 +13,7 @@
 // };
 
 export const fetchDCAPerformance = async () => {
-    const response = await fetch('http://127.0.0.1:8000/api/admin/dca-performance');
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/dca-performance`);
 
     if (!response.ok) {
         throw new Error('Failed to fetch Dca performance');

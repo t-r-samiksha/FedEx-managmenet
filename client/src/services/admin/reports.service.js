@@ -13,7 +13,7 @@
 // };
 
 export const fetchReportsData = async () => {
-    const response = await fetch('http://127.0.0.1:8000/api/admin/reports');
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/reports`);
 
     if (!response.ok) {
         throw new Error('Failed to fetch reports data');

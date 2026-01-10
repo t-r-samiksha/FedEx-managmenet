@@ -1,10 +1,14 @@
 import joblib
 import pandas as pd
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # -----------------------------
 # 1. Load Trained Model
 # -----------------------------
-model = joblib.load("model.pkl")
+model = joblib.load(os.getenv("MODEL_PATH", "model.pkl"))
 
 # -----------------------------
 # 2. Prediction Function

@@ -12,12 +12,16 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routes.admin import admin_router
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = FastAPI(title="FedEx DCA Management API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # dev only
+    allow_origins=[os.getenv("CORS_ORIGINS", "*")],  # dev only
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

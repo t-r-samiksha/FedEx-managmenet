@@ -1,6 +1,10 @@
 import pandas as pd
 import numpy as np
 import joblib
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
@@ -12,7 +16,7 @@ from sklearn.metrics import accuracy_score, classification_report, roc_auc_score
 # -----------------------------
 # 1. Load Dataset
 # -----------------------------
-data = pd.read_csv("dataset.csv")
+data = pd.read_csv(os.getenv("DATASET_PATH", "dataset.csv"))
 
 # Drop case_id (not useful for ML)
 X = data.drop(columns=["case_id", "recovered"])
@@ -93,5 +97,5 @@ print("\nClassification Report:\n", classification_report(y_test, y_pred))
 # -----------------------------
 # 9. Save Model
 # -----------------------------
-joblib.dump(pipeline, "model.pkl")
+joblib.dump(pipeline, os.getenv("MODEL_PATH", "model.pkl"))
 print("\nModel saved as model.pkl")
